@@ -4,64 +4,649 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Деванагари - аудио-тренажёр</title>
-    <!-- ... ваш CSS ... -->
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            background: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #2c3e50; margin-top: 0; font-size: 24px; }
+        .subtitle { text-align: center; color: #7f8c8d; font-size: 14px; margin-bottom: 20px; }
+        
+        .selection-area {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .selection-area h3 { margin: 0 0 10px 0; color: #2c3e50; font-size: 16px; }
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 4px;
+        }
+        .letter-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 20px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .letter-item:hover { background: #e9ecef; }
+        .letter-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .letter-item .dev {
+            font-size: 24px;
+            font-weight: bold;
+            width: 35px;
+            text-align: center;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 100px;
+        }
+        .btn-primary { background: #4a90d9; color: white; }
+        .btn-primary:hover { background: #357abd; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-success:hover { background: #218838; }
+        .btn-warning { background: #ffc107; color: #333; }
+        .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .quiz-area {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .quiz-letter {
+            font-size: 80px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin: 5px 0;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        .quiz-hint { font-size: 16px; color: #6c757d; margin-bottom: 10px; min-height: 25px; }
+        
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            margin: 10px 0;
+        }
+        .quiz-options button {
+            padding: 20px 10px;
+            font-size: 18px;
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-height: 100px;
+        }
+        .quiz-options button .play-icon {
+            font-size: 40px;
+        }
+        .quiz-options button .label-text {
+            font-size: 16px;
+            color: #6c757d;
+            font-weight: 600;
+        }
+        .quiz-options button:hover:not(:disabled) { 
+            background: #e9ecef; 
+            border-color: #4a90d9;
+            transform: scale(1.03);
+        }
+        .quiz-options button:disabled { cursor: not-allowed; opacity: 0.7; }
+        .quiz-options button.selected { 
+            border-color: #4a90d9;
+            background: #e3f0ff;
+            box-shadow: 0 0 15px rgba(74, 144, 217, 0.3);
+        }
+        .quiz-options button.correct { 
+            background: #d4edda; 
+            border-color: #28a745;
+            box-shadow: 0 0 20px rgba(40, 167, 69, 0.3);
+        }
+        .quiz-options button.wrong { 
+            background: #f8d7da; 
+            border-color: #dc3545;
+            box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+        }
+        .quiz-options button.revealed-correct { 
+            background: #d4edda; 
+            border-color: #28a745;
+        }
+        
+        .confirm-btn {
+            margin-top: 10px;
+            padding: 14px 40px;
+            font-size: 18px;
+            font-weight: 700;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 200px;
+        }
+        .confirm-btn:hover:not(:disabled) { 
+            background: #218838; 
+            transform: scale(1.02);
+        }
+        .confirm-btn:disabled { 
+            opacity: 0.4; 
+            cursor: not-allowed; 
+            transform: none;
+        }
+        
+        .quiz-result { font-size: 18px; font-weight: 600; margin: 10px 0; min-height: 30px; }
+        .quiz-result.correct { color: #28a745; }
+        .quiz-result.wrong { color: #dc3545; }
+        
+        @keyframes flashGreen {
+            0% { background-color: #d4edda; transform: scale(1); }
+            50% { background-color: #28a745; color: white; transform: scale(1.1); border-radius: 20px; padding: 0 20px; }
+            100% { background-color: #d4edda; transform: scale(1); }
+        }
+        .flash-correct {
+            animation: flashGreen 0.6s ease;
+            border-radius: 20px;
+            padding: 0 20px;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .stats span { font-weight: 700; color: #2c3e50; }
+        
+        .progress-info {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        .progress-info span { font-weight: 700; color: #2c3e50; }
+        
+        @media (max-width: 500px) {
+            .quiz-options { grid-template-columns: 1fr 1fr; }
+            .letter-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); }
+            .quiz-letter { font-size: 60px; min-height: 70px; }
+        }
+    </style>
 </head>
 <body>
-<!-- ... ваш HTML ... -->
+<div class="container">
+    <h1>🎧 Деванагари</h1>
+    <p class="subtitle">Слушайте варианты, выбирайте и подтверждайте</p>
+    
+    <div class="selection-area" id="selectionArea">
+        <h3>✅ Выберите символы для изучения</h3>
+        <div class="letter-grid" id="letterGrid"></div>
+    </div>
+    
+    <div class="btn-group">
+        <button class="btn btn-primary" id="saveBtn">💾 Сохранить</button>
+        <button class="btn btn-success" id="nextBtn">🔄 Следующий</button>
+        <button class="btn btn-warning" id="resetBtn">🗑️ Сброс</button>
+    </div>
+    
+    <div class="quiz-area" id="quizArea">
+        <div class="quiz-letter" id="quizLetter">❓</div>
+        <div class="quiz-hint" id="quizHint">Нажмите на 🔊 чтобы прослушать вариант</div>
+        <div class="quiz-options" id="quizOptions"></div>
+        <button class="confirm-btn" id="confirmBtn" disabled>✅ Подтвердить выбор</button>
+        <div class="quiz-result" id="quizResult"></div>
+        <div class="progress-info" id="progressInfo">Осталось: <span id="remainingCount">0</span> / <span id="totalInPool">0</span></div>
+        <div class="stats">
+            <div>✅ <span id="correctCount">0</span></div>
+            <div>❌ <span id="wrongCount">0</span></div>
+            <div>📊 <span id="totalCount">0</span></div>
+        </div>
+    </div>
+</div>
 
 <script>
-// ... ваша база данных ...
-
 // ----------------------------------------------------------------------
-// ПУТИ К ВАШИМ АУДИОФАЙЛАМ
+// БАЗА ДАННЫХ (только деванагари и транслитерация для озвучки)
 // ----------------------------------------------------------------------
-const AUDIO_FILES = {
-    "अ": "audio/a.mp3",
-    "आ": "audio/aa.mp3",
-    "इ": "audio/i.mp3",
-    "ई": "audio/ii.mp3",
-    "उ": "audio/u.mp3",
-    "ऊ": "audio/uu.mp3",
-    "ऋ": "audio/ri.mp3",
-    "ए": "audio/e.mp3",
-    "ऐ": "audio/ai.mp3",
-    "ओ": "audio/o.mp3",
-    "औ": "audio/au.mp3",
-    "अं": "audio/am.mp3",
-    "अः": "audio/ah.mp3",
-    "क": "audio/ka.mp3",
-    "का": "audio/kaa.mp3",
-    "कि": "audio/ki.mp3",
-    // ... и так далее для всех символов
+const ALL_LETTERS = {
+    "अ": "a", "आ": "aa", "इ": "i", "ई": "ii",
+    "उ": "u", "ऊ": "uu", "ऋ": "ri",
+    "ए": "e", "ऐ": "ai",
+    "ओ": "o", "औ": "au",
+    "अं": "am", "अः": "ah",
+    
+    "क": "ka", "ख": "kha", "ग": "ga", "घ": "gha", "ङ": "nga",
+    "च": "cha", "छ": "chha", "ज": "ja", "झ": "jha", "ञ": "nya",
+    "ट": "ta", "ठ": "tha", "ड": "da", "ढ": "dha", "ण": "na",
+    "त": "ta", "थ": "tha", "द": "da", "ध": "dha", "न": "na",
+    "प": "pa", "फ": "pha", "ब": "ba", "भ": "bha", "म": "ma",
+    "य": "ya", "र": "ra", "ल": "la", "व": "va",
+    "श": "sha", "ष": "sha", "स": "sa", "ह": "ha",
+    "क्ष": "ksha", "त्र": "tra", "ज्ञ": "gya"
 };
 
+const SYLLABLES = {
+    "का": "kaa", "कि": "ki", "की": "kii", "कु": "ku", "कू": "kuu",
+    "के": "ke", "कै": "kai", "को": "ko", "कौ": "kau",
+    "खा": "khaa", "खि": "khi", "खी": "khii", "खु": "khu", "खू": "khuu",
+    "खे": "khe", "खै": "khai", "खो": "kho", "खौ": "khau",
+    "गा": "gaa", "गि": "gi", "गी": "gii", "गु": "gu", "गू": "guu",
+    "गे": "ge", "गै": "gai", "गो": "go", "गौ": "gau",
+    "घा": "ghaa", "घि": "ghi", "घी": "ghii", "घु": "ghu", "घू": "ghuu",
+    "घे": "ghe", "घै": "ghai", "घो": "gho", "घौ": "ghau",
+    "ता": "taa", "ति": "ti", "ती": "tii", "तु": "tu", "तू": "tuu",
+    "ते": "te", "तै": "tai", "तो": "to", "तौ": "tau",
+    "ना": "naa", "नि": "ni", "नी": "nii", "नु": "nu", "नू": "nuu",
+    "ने": "ne", "नै": "nai", "но": "no", "नौ": "nau",
+    "मा": "maa", "मि": "mi", "मी": "mii", "मु": "mu", "मू": "muu",
+    "मे": "me", "मै": "mai", "मो": "mo", "मौ": "mau",
+    "रा": "raa", "रि": "ri", "री": "rii", "रु": "ru", "रू": "ruu",
+    "रे": "re", "रै": "rai", "रो": "ro", "रौ": "rau",
+    "ला": "laa", "लि": "li", "ली": "lii", "लु": "lu", "लू": "luu",
+    "ले": "le", "लै": "lai", "लो": "lo", "लौ": "lau",
+    "चा": "caa", "चि": "ci", "ची": "cii", "चु": "cu", "चू": "cuu",
+    "चे": "ce", "चै": "cai", "चो": "co", "चौ": "cau",
+    "जा": "jaa", "जि": "ji", "जी": "jii", "जु": "ju", "जू": "juu",
+    "जे": "je", "जै": "jai", "जो": "jo", "जौ": "jau"
+};
+
+const ALL_ITEMS = { ...ALL_LETTERS, ...SYLLABLES };
+
+const DEFAULT_SELECTED = [
+    'अ', 'आ', 'इ', 'ई', 'उ', 'ऊ', 'ऐ', 'औ', 'ए', 'ओ', 'अं', 'अः',
+    'क', 'ख', 'ग', 'घ'
+];
+
 // ----------------------------------------------------------------------
-// ВОСПРОИЗВЕДЕНИЕ ЗВУКА (ЗАМЕНА TTS)
+// СОСТОЯНИЕ
 // ----------------------------------------------------------------------
-function speakText(soundText, callback) {
-    // soundText — это произношение (например, "ka", "kha")
-    // Находим символ деванагари по произношению
-    let foundKey = null;
-    for (const [key, value] of Object.entries(ALL_ITEMS)) {
-        if (value === soundText) {
-            foundKey = key;
-            break;
-        }
-    }
-    
-    if (!foundKey || !AUDIO_FILES[foundKey]) {
-        console.warn('Нет аудио для:', soundText);
+let learned = [...DEFAULT_SELECTED];
+let questionPool = [];
+let currentItem = null;
+let correctAnswer = null;
+let options = [];
+let isAnswered = false;
+let selectedIndex = null;
+let autoNextTimer = null;
+
+let stats = { correct: 0, wrong: 0, total: 0 };
+
+// ----------------------------------------------------------------------
+// SPEECH SYNTHESIS
+// ----------------------------------------------------------------------
+function speakText(text, callback) {
+    if (!window.speechSynthesis) {
         if (callback) callback();
         return;
     }
     
-    const audio = new Audio(AUDIO_FILES[foundKey]);
-    audio.onended = callback;
-    audio.onerror = callback;
-    audio.play().catch(e => console.warn('Ошибка воспроизведения:', e));
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'hi-IN';
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const hindiVoice = voices.find(v => v.lang.startsWith('hi'));
+    if (hindiVoice) {
+        utterance.voice = hindiVoice;
+    }
+    
+    if (callback) {
+        utterance.onend = callback;
+        utterance.onerror = callback;
+    }
+    
+    window.speechSynthesis.speak(utterance);
 }
 
-// ... остальной код ...
+if (window.speechSynthesis) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.getVoices();
+    };
+}
+
+// ----------------------------------------------------------------------
+// ФУНКЦИИ
+// ----------------------------------------------------------------------
+function updateSyllablesForLearnedConsonants() {
+    const consonants = learned.filter(item => item in ALL_LETTERS && item.length === 1 && item.match(/[क-ह]/));
+    const allSyllables = Object.keys(SYLLABLES);
+    const newSyllables = [];
+    
+    consonants.forEach(cons => {
+        const matchingSyllables = allSyllables.filter(syl => syl.startsWith(cons));
+        newSyllables.push(...matchingSyllables);
+    });
+    
+    newSyllables.forEach(syl => {
+        if (!learned.includes(syl)) {
+            learned.push(syl);
+        }
+    });
+}
+
+function renderLetterGrid() {
+    const grid = document.getElementById('letterGrid');
+    grid.innerHTML = '';
+    
+    const letters = Object.keys(ALL_LETTERS).sort((a, b) => {
+        const aIsVowel = a.length <= 2 && !a.match(/[क-ह]/);
+        const bIsVowel = b.length <= 2 && !b.match(/[क-ह]/);
+        if (aIsVowel && !bIsVowel) return -1;
+        if (!aIsVowel && bIsVowel) return 1;
+        return a.localeCompare(b);
+    });
+    
+    const syllables = Object.keys(SYLLABLES).sort();
+    const allKeys = [...letters, ...syllables];
+    
+    allKeys.forEach(key => {
+        const div = document.createElement('div');
+        div.className = 'letter-item';
+        
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.id = 'cb_' + key;
+        cb.checked = learned.includes(key);
+        cb.addEventListener('change', () => {
+            if (cb.checked) {
+                if (!learned.includes(key)) learned.push(key);
+            } else {
+                learned = learned.filter(item => item !== key);
+            }
+            updateSyllablesForLearnedConsonants();
+            renderLetterGrid();
+        });
+        
+        const label = document.createElement('label');
+        label.htmlFor = 'cb_' + key;
+        label.innerHTML = `<span class="dev">${key}</span>`;
+        
+        div.appendChild(cb);
+        div.appendChild(label);
+        grid.appendChild(div);
+    });
+}
+
+function updateStats() {
+    document.getElementById('correctCount').textContent = stats.correct;
+    document.getElementById('wrongCount').textContent = stats.wrong;
+    document.getElementById('totalCount').textContent = stats.total;
+}
+
+function updateProgressInfo() {
+    document.getElementById('remainingCount').textContent = questionPool.length;
+    document.getElementById('totalInPool').textContent = learned.length;
+}
+
+// ----------------------------------------------------------------------
+// ОТОБРАЖЕНИЕ ВАРИАНТОВ
+// ----------------------------------------------------------------------
+function renderQuizOptions() {
+    const container = document.getElementById('quizOptions');
+    container.innerHTML = '';
+    selectedIndex = null;
+    document.getElementById('confirmBtn').disabled = true;
+    
+    options.forEach((opt, index) => {
+        const btn = document.createElement('button');
+        btn.dataset.index = index;
+        btn.innerHTML = `
+            <span class="play-icon">🔊</span>
+            <span class="label-text">Вариант ${index + 1}</span>
+        `;
+        btn.addEventListener('click', () => {
+            if (isAnswered) return;
+            // Проигрываем звук
+            speakText(opt);
+            // Визуально выделяем
+            document.querySelectorAll('#quizOptions button').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedIndex = index;
+            document.getElementById('confirmBtn').disabled = false;
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ----------------------------------------------------------------------
+// ГЕНЕРАЦИЯ ВОПРОСА
+// ----------------------------------------------------------------------
+function generateQuestion() {
+    if (autoNextTimer) {
+        clearTimeout(autoNextTimer);
+        autoNextTimer = null;
+    }
+    
+    isAnswered = false;
+    selectedIndex = null;
+    document.getElementById('confirmBtn').disabled = true;
+    
+    document.getElementById('quizResult').textContent = '';
+    document.getElementById('quizResult').className = 'quiz-result';
+    document.getElementById('quizHint').textContent = 'Нажмите на 🔊 чтобы прослушать вариант, затем подтвердите выбор';
+    
+    const validLearned = learned.filter(item => item in ALL_ITEMS);
+    if (validLearned.length === 0) {
+        document.getElementById('quizLetter').textContent = '❌';
+        document.getElementById('quizHint').textContent = 'Выберите символы выше!';
+        document.getElementById('quizOptions').innerHTML = '';
+        updateProgressInfo();
+        return;
+    }
+    
+    if (questionPool.length === 0) {
+        questionPool = shuffleArray([...validLearned]);
+        document.getElementById('quizHint').textContent = '🔄 Новый круг!';
+    }
+    
+    currentItem = questionPool.pop();
+    correctAnswer = ALL_ITEMS[currentItem];
+    document.getElementById('quizLetter').textContent = currentItem;
+    
+    const learnedSounds = [...new Set(validLearned.map(item => ALL_ITEMS[item]))];
+    let wrongOptions = learnedSounds.filter(s => s !== correctAnswer);
+    wrongOptions = shuffleArray(wrongOptions);
+    let selectedWrong = wrongOptions.slice(0, 2);
+    
+    while (selectedWrong.length < 2) {
+        selectedWrong.push(correctAnswer + '?');
+    }
+    
+    options = shuffleArray([correctAnswer, ...selectedWrong]);
+    
+    renderQuizOptions();
+    updateProgressInfo();
+}
+
+// ----------------------------------------------------------------------
+// ПРОВЕРКА ОТВЕТА
+// ----------------------------------------------------------------------
+function checkAnswer() {
+    if (isAnswered) return;
+    if (selectedIndex === null) return;
+    
+    isAnswered = true;
+    document.getElementById('confirmBtn').disabled = true;
+    
+    const buttons = document.querySelectorAll('#quizOptions button');
+    const chosen = options[selectedIndex];
+    const isCorrect = chosen === correctAnswer;
+    
+    stats.total++;
+    if (isCorrect) {
+        stats.correct++;
+        document.getElementById('quizResult').textContent = '✅ Правильно!';
+        document.getElementById('quizResult').className = 'quiz-result correct';
+        
+        const letterEl = document.getElementById('quizLetter');
+        letterEl.classList.add('flash-correct');
+        setTimeout(() => letterEl.classList.remove('flash-correct'), 600);
+        
+        buttons.forEach(btn => btn.disabled = true);
+        buttons[selectedIndex].classList.add('correct');
+        
+        updateStats();
+        updateProgressInfo();
+        
+        if (autoNextTimer) clearTimeout(autoNextTimer);
+        autoNextTimer = setTimeout(() => {
+            autoNextTimer = null;
+            generateQuestion();
+        }, 1000);
+        
+    } else {
+        stats.wrong++;
+        document.getElementById('quizResult').textContent = `❌ Неверно. Правильно: ${correctAnswer}`;
+        document.getElementById('quizResult').className = 'quiz-result wrong';
+        
+        updateStats();
+        
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            if (options[i] === correctAnswer) {
+                btn.classList.add('revealed-correct');
+            } else if (i === selectedIndex && !isCorrect) {
+                btn.classList.add('wrong');
+            }
+        });
+    }
+}
+
+// ----------------------------------------------------------------------
+// ВСПОМОГАТЕЛЬНЫЕ
+// ----------------------------------------------------------------------
+function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+// ----------------------------------------------------------------------
+// ИНИЦИАЛИЗАЦИЯ
+// ----------------------------------------------------------------------
+document.addEventListener('DOMContentLoaded', () => {
+    updateSyllablesForLearnedConsonants();
+    renderLetterGrid();
+    updateStats();
+    
+    const validLearned = learned.filter(item => item in ALL_ITEMS);
+    questionPool = shuffleArray([...validLearned]);
+    updateProgressInfo();
+    
+    document.getElementById('confirmBtn').addEventListener('click', checkAnswer);
+    
+    document.getElementById('saveBtn').addEventListener('click', () => {
+        updateSyllablesForLearnedConsonants();
+        renderLetterGrid();
+        
+        const valid = learned.filter(item => item in ALL_ITEMS);
+        questionPool = shuffleArray([...valid]);
+        updateProgressInfo();
+        generateQuestion();
+    });
+    
+    document.getElementById('nextBtn').addEventListener('click', () => {
+        if (autoNextTimer) {
+            clearTimeout(autoNextTimer);
+            autoNextTimer = null;
+        }
+        generateQuestion();
+    });
+    
+    document.getElementById('resetBtn').addEventListener('click', () => {
+        if (confirm('Удалить весь прогресс и статистику?')) {
+            learned = [...DEFAULT_SELECTED];
+            updateSyllablesForLearnedConsonants();
+            stats = { correct: 0, wrong: 0, total: 0 };
+            
+            const valid = learned.filter(item => item in ALL_ITEMS);
+            questionPool = shuffleArray([...valid]);
+            
+            renderLetterGrid();
+            updateStats();
+            updateProgressInfo();
+            generateQuestion();
+        }
+    });
+    
+    if (learned.length > 0) {
+        generateQuestion();
+    } else {
+        document.getElementById('quizLetter').textContent = '📖';
+        document.getElementById('quizHint').textContent = 'Выберите символы и нажмите "Сохранить"';
+        document.getElementById('quizOptions').innerHTML = '';
+        updateProgressInfo();
+    }
+});
 </script>
 </body>
 </html>
